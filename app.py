@@ -7,15 +7,14 @@ CORS(app)
 
 @app.route("/predict")
 def predict():
-    symbol = request.args.get("symbol")
-    interval = request.args.get("interval")
+    symbol = request.args.get("symbol", "EUR/USD")
+    interval = request.args.get("interval", "1day")
     
-    if not symbol or not interval:
-        return jsonify({"error": "Missing parameters"}), 400
-
     direction = random.choice(["Hausse", "Baisse"])
-    confidence = round(random.uniform(51, 75), 1)
-    return jsonify({"prediction": f"{direction} probable ({confidence}%)"})
+    confidence = round(random.uniform(51.0, 75.0), 1)
+    prediction = f"{direction} probable ({confidence}%)"
+    
+    return jsonify({"symbol": symbol, "interval": interval, "prediction": prediction})
 
 if __name__ == "__main__":
-    app.run(host="0.0.0.0", port=5000)
+    app.run(debug=True)
