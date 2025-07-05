@@ -3,11 +3,12 @@ from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 import random
 
-app = FastAPI()  # ← ligne 5-6
+app = FastAPI()
 
+# ⭐ AJOUTE BIEN LE MIDDLEWARE JUSTE APRES app = FastAPI()
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # ou ["http://localhost:5173"] en prod
+    allow_origins=["*"],  # ou ["http://localhost:5173"] si tu veux restreindre
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
