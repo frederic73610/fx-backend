@@ -1,12 +1,21 @@
 from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 import random
 
-app = FastAPI()
+app = FastAPI()  # ← ligne 5-6
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],  # ou ["http://localhost:5173"] en prod
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 class PredictionResponse(BaseModel):
     prediction: str
-    interval: str   # ➡️ ajoute ce champ
+    interval: str
 
 @app.get("/predict", response_model=PredictionResponse)
 def predict(symbol: str = "EUR/USD", interval: str = "1day"):
@@ -14,5 +23,5 @@ def predict(symbol: str = "EUR/USD", interval: str = "1day"):
     confidence = round(random.uniform(51, 70), 1)
     return {
         "prediction": f"{direction} probable ({confidence}%)",
-        "interval": interval   # ➡️ renvoie l'interval demandé
+        "interval": interval
     }
