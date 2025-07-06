@@ -103,6 +103,10 @@ export default function FXAggregatorFull() {
           <option key={pair} value={pair}>{pair}</option>
         ))}
       </select>
+	  
+	  <p>
+	Prix actuel : {price !== null ? price : "Chargement..."}
+	  </p>
 
       <input
         type="number"
