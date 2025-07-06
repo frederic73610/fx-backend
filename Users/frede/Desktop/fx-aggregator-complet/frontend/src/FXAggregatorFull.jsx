@@ -1,6 +1,8 @@
 import React, { useEffect, useRef, useState } from "react";
 import Chart from "chart.js/auto";
 import { Chart as ChartJS } from 'chart.js';
+
+
 import {
   LineController,
   LineElement,
@@ -17,6 +19,7 @@ import {
 
 import { TimeScale } from 'chart.js';
 import 'chartjs-adapter-date-fns';
+
 
 ChartJS.register(
   LineController,
@@ -68,29 +71,31 @@ export default function FXAggregatorFull() {
   }, [baseCurrency, quoteCurrency]);
 
   useEffect(() => {
-  fetch(`https://fx-backend2.onrender.com/predict?symbol=${encodeURIComponent(selectedPair)}&interval=1day`)
+  const url = `https://fx-backend2.onrender.com/predict?symbol=${encodeURIComponent(selectedPair)}&interval=1day`;
+  console.log("Fetch URL:", url);
+
+  fetch(url)
     .then(res => res.json())
     .then(data => {
-  if (data?.prediction) {
-    const match = data.prediction.match(/(Hausse|Baisse) probable \((\d+(\.\d+)?)%\)/);
+      if (data?.prediction) {
+        const match = data.prediction.match(/(Hausse|Baisse) probable \((\d+(\.\d+)?)%\)/);
 
-    if (match) {
-      const direction = match[1] === "Hausse" ? "s'apprécie" : "se déprécie";
-      const percentage = match[2];
+        if (match) {
+          const direction = match[1] === "Hausse" ? "s'apprécie" : "se déprécie";
+          const percentage = match[2];
 
-      const intervalMap = {
-        "1day": "24 heures",
-        "4h": "4 heures",
-        "1h": "1 heure",
-        "15min": "15 minutes"
-      };
-      const intervalText = intervalMap[data.interval] || data.interval;
+          const intervalMap = {
+            "1day": "24 heures",
+            "4h": "4 heures",
+            "1h": "1 heure",
+            "15min": "15 minutes"
+          };
+          const intervalText = intervalMap[data.interval] || data.interval;
 
-      const text = `Il y a ${percentage}% de chances que ${baseCurrency} ${direction} par rapport à ${quoteCurrency} dans les prochaines ${intervalText}.`;
-
-      setPrediction(text);
-    } else {
-      setPrediction(data.prediction);
+          const text = `Il y a ${percentage}% de chances que ${baseCurrency} ${direction} par rapport à ${quoteCurrency} dans les prochaines ${intervalText}.`;
+          setPrediction(text);
+        } else {
+          setPrediction(data.prediction);
         }
       } else {
         console.log("NO DATA.prediction FIELD");
@@ -102,6 +107,9 @@ export default function FXAggregatorFull() {
       setPrediction("Erreur lors de la récupération de la prédiction.");
     });
 }, [selectedPair, baseCurrency, quoteCurrency]);
+
+
+
 
 
   useEffect(() => {
