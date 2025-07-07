@@ -55,6 +55,7 @@ export default function FXAggregatorFull() {
   const [currencies] = useState(["EUR", "USD", "JPY", "GBP", "AUD", "CHF"]);
   const [baseCurrency, setBaseCurrency] = useState("EUR");
   const [quoteCurrency, setQuoteCurrency] = useState("USD");
+  const [quoteValue, setQuoteValue] = useState(null);
   const [selectedPair, setSelectedPair] = useState("EUR/USD");
   const [amount, setAmount] = useState(1000);
   const [price, setPrice] = useState(null);
@@ -196,6 +197,29 @@ export default function FXAggregatorFull() {
       }
     });
   }, [historicalData, selectedPair]);
+  
+  useEffect(() => {
+  const fetchQuote = async () => {
+    try {
+      const response = await fetch(`https://api.exchangerate.host/latest?base=${baseCurrency}&symbols=${quoteCurrency}`);
+      const data = await response.json();
+      if (data && data.rates && data.rates[quoteCurrency]) {
+        const val = data.rates[quoteCurrency].toFixed(4);
+        setQuoteValue(val); 
+        setPrice(val); // ✅ AJOUT
+      }
+    } catch (error) {
+      console.error("Erreur lors du fetch du taux de change :", error);
+    }
+  };
+
+  fetchQuote();
+  const intervalId = setInterval(fetchQuote, 30000); // refresh toutes les 30s
+
+  return () => clearInterval(intervalId);
+}, [baseCurrency, quoteCurrency]);
+
+
 
   const handleExecute = () => {
     if (!price) return;
@@ -208,30 +232,40 @@ export default function FXAggregatorFull() {
     setExecutions(prev => [newExecution, ...prev]);
   };
 
-  return (
-    <div style={{ padding: "1rem", fontFamily: "sans-serif" }}>
-      <h1>FX Aggregator</h1>
-      <p><strong>Prédiction IA :</strong> {prediction || "Chargement..."}</p>
-      <div style={{ marginBottom: "1rem" }}>
-        <select value={baseCurrency} onChange={e => setBaseCurrency(e.target.value)}>
-          {currencies.map(c => (<option key={c} value={c}>{c}</option>))}
-        </select>
-        <span style={{ margin: "0 0.5rem" }}>/</span>
-        <select value={quoteCurrency} onChange={e => setQuoteCurrency(e.target.value)}>
-          {currencies.map(c => (<option key={c} value={c}>{c}</option>))}
-        </select>
-      </div>
-      <input
-        type="number"
-        value={amount}
-        onChange={e => setAmount(+e.target.value)}
-        style={{ marginRight: "0.5rem" }}
-      />
-      <button onClick={handleExecute}>Exécuter</button>
-      {convertedAmount && (
-        <p>Montant converti : {convertedAmount} {quoteCurrency}</p>
-      )}
-      <canvas ref={chartRef} width="600" height="300" style={{ marginTop: "2rem" }} />
+    return (
+  <div style={{ padding: "1rem", fontFamily: "sans-serif" }}>
+    <h1>FX Aggregator</h1>
+    <p><strong>Prédiction IA :</strong> {prediction || "Chargement..."}</p>
+    <div style={{ marginBottom: "1rem" }}>
+      <select value={baseCurrency} onChange={e => setBaseCurrency(e.target.value)}>
+        {currencies.map(c => (<option key={c} value={c}>{c}</option>))}
+      </select>
+      <span style={{ margin: "0 0.5rem" }}>/</span>
+      <select value={quoteCurrency} onChange={e => setQuoteCurrency(e.target.value)}>
+        {currencies.map(c => (<option key={c} value={c}>{c}</option>))}
+      </select>
+    </div>
+    <input
+      type="number"
+      value={amount}
+      onChange={e => setAmount(+e.target.value)}
+      style={{ marginRight: "0.5rem" }}
+    />
+    <button onClick={handleExecute}>Exécuter</button>
+    {convertedAmount && (
+      <p>Montant converti : {convertedAmount} {quoteCurrency}</p>
+    )}
+    <canvas ref={chartRef} width="600" height="300" style={{ marginTop: "2rem" }} />
+    <div>
+      <h3>
+        {baseCurrency}/{quoteCurrency}
+        {quoteValue && (
+          <span style={{ marginLeft: "10px", fontWeight: "normal" }}>
+            {quoteValue}
+          </span>
+        )}
+      </h3>
+
       <h2>Historique des exécutions</h2>
       {executions.length === 0 ? (
         <p>Aucune exécution.</p>
@@ -245,5 +279,9 @@ export default function FXAggregatorFull() {
         </ul>
       )}
     </div>
-  );
+  </div>
+ ); // ✅ ici tu fermes le JSX
 }
+
+
+
