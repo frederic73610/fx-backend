@@ -1,4 +1,3 @@
-
 import React, { useEffect, useRef, useState } from "react";
 import Chart from "chart.js/auto";
 
@@ -82,15 +81,21 @@ export default function FXAggregatorFull() {
   }, [historicalData, selectedPair]);
 
   const handleExecute = () => {
-    if (!price) return;
-    const newExecution = {
-      time: new Date().toLocaleString(),
-      pair: selectedPair,
-      amount,
-      price,
-    };
-    setExecutions(prev => [newExecution, ...prev]);
+  console.log("Executing with price:", price);
+  if (!price) {
+    console.log("No price available, execution aborted.");
+    return;
+  }
+  const newExecution = {
+    time: new Date().toLocaleString(),
+    pair: selectedPair,
+    amount,
+    price,
   };
+  console.log("New execution added:", newExecution);
+  setExecutions(prev => [newExecution, ...prev]);
+};
+
 
   return (
     <div style={{ padding: "1rem", fontFamily: "sans-serif" }}>
@@ -103,10 +108,10 @@ export default function FXAggregatorFull() {
           <option key={pair} value={pair}>{pair}</option>
         ))}
       </select>
-	  
-	  <p>
-	Prix actuel : {price !== null ? price : "Chargement..."}
-	  </p>
+
+      <p>
+        Prix actuel : {price !== null ? price : "Chargement..."}
+      </p>
 
       <input
         type="number"
